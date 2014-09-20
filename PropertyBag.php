@@ -27,7 +27,7 @@ abstract class PropertyBag implements ArrayAccess {
 			return $obj;
 		}
 		
-		throw new Exception('Expected ');
+		throw new Exception('Expected array or object.');
 	}
 	
 	public function __get($name) {
