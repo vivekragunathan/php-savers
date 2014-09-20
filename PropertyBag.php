@@ -2,7 +2,7 @@
 
 # Usable currently but work in progress...
 
-abstract class PropertyBag implements ArrayAccess {
+abstract class PropertyBag implements ArrayAccess, Countable {
 	protected $_store = null;
 	protected $_readOnly = false;
 	
@@ -62,37 +62,45 @@ class ArrayBasedPropertyBag extends PropertyBag {
 	
 	#region ArrayAccess Interface Implementation
 
-		public function offsetExists($key) {
-			// TODO: verifyKeyType($key);
-			return isset($this->_store[$key]);
-		}
+	public function offsetExists($key) {
+		// TODO: verifyKeyType($key);
+		return isset($this->_store[$key]);
+	}
 	
-		public function offsetGet($key) {
-			if (!$this->offsetExists($key)) {
-				throw new Exception('Key not found: ' . $key);
-			}
-			
-			return $this->_store[$key];
-	    }
-
-	    public function offsetSet($key, $value) {
-			if (!$this->offsetExists($key) && $this->isReadOnly()) {
-				throw new Exception('PropertyBag is not writable. Key: ' . $key);
-			}
-			
-			$this->_store[$key] = $value;
-	    }
-
-	    public function offsetUnset($key) {
-			if ($this->offsetExists($key)) {
-		 		unset($this->_store[key]);
-				return true;
-			}
-			
-			return false;
+	public function offsetGet($key) {
+		if (!$this->offsetExists($key)) {
+			throw new Exception('Key not found: ' . $key);
 		}
+		
+		return $this->_store[$key];
+	}
+
+	public function offsetSet($key, $value) {
+		if (!$this->offsetExists($key) && $this->isReadOnly()) {
+			throw new Exception('PropertyBag is not writable. Key: ' . $key);
+		}
+		
+		$this->_store[$key] = $value;
+	}
+
+	public function offsetUnset($key) {
+		if ($this->offsetExists($key)) {
+	 		unset($this->_store[key]);
+			return true;
+		}
+		
+		return false;
+	}
 	
-		#endregion
+	#endregion
+	
+	#region Countable Interface Implementation
+	
+	public function count() {
+		return count($this->_store);
+	}
+	
+	#endregion
 }
 
 class ObjectBasedPropertyBag extends PropertyBag {
@@ -111,35 +119,43 @@ class ObjectBasedPropertyBag extends PropertyBag {
 	
 	#region ArrayAccess Interface Implementation
 
-		public function offsetExists($key) {
-			// TODO: verifyKeyType($key);
-			return property_exists($this->_store, $key);
-		}
+	public function offsetExists($key) {
+		// TODO: verifyKeyType($key);
+		return property_exists($this->_store, $key);
+	}
 	
-		public function offsetGet($key) {
-			if (!$this->offsetExists($key)) {
-				throw new Exception('Key not found: ' . $key);
-			}
-			
-			return $this->_store->$key;
-	    }
-
-	    public function offsetSet($key, $value) {
-			if (!$this->offsetExists($key) && $this->isReadOnly()) {
-				throw new Exception('PropertyBag is not writable. Key: ' . $key);
-			}
-			
-			$this->_store->$key = $value;
-	    }
-
-	    public function offsetUnset($key) {
-		 	if ($this->offsetExists($key)) {
-		 		unset($this->_store->key);
-				return true;
-			}
-			
-			return false;
+	public function offsetGet($key) {
+		if (!$this->offsetExists($key)) {
+			throw new Exception('Key not found: ' . $key);
 		}
+			
+		return $this->_store->$key;
+	}
+
+	public function offsetSet($key, $value) {
+		if (!$this->offsetExists($key) && $this->isReadOnly()) {
+			throw new Exception('PropertyBag is not writable. Key: ' . $key);
+		}
+			
+		$this->_store->$key = $value;
+	}
+
+	public function offsetUnset($key) {
+		if ($this->offsetExists($key)) {
+			unset($this->_store->key);
+			return true;
+		}
+		
+		return false;
+	}
 	
-		#endregion
+	#endregion
+	
+	#region Countable Interface Implementation
+	
+	public function count() {
+		return count(get_object_vars($this->_store));
+	}
+	
+	#endregion
 }
