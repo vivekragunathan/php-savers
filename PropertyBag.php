@@ -7,7 +7,6 @@ abstract class PropertyBag implements ArrayAccess, Countable {
 	protected $_readOnly = false;
 	
 	protected function __construct(&$source, $readOnly = false) {
-		self::verifySourceType($source);
 		$this->_store = $source;
 		$this->_readOnly = $readOnly;
 	}
@@ -16,18 +15,16 @@ abstract class PropertyBag implements ArrayAccess, Countable {
 		return $this->_readOnly;
 	}
 	
-	public static function get(&$source, $readOnly = false) {
-		if ($source === null || is_array($source)) {
-			$obj = new ArrayBasedPropertyBag($source, $readOnly);
-			return $obj;
+	public static function fromArray(array &$source = null, $readOnly = false) {
+		return new ArrayBasedPropertyBag($source, $readOnly);
+	}
+	
+	public static function fromObject($source, $readOnly = false) {
+		if ($source === null || !is_object($source)) {
+			throw new Exception('Expected object type.');
 		}
 		
-		if (is_object($source)) {
-			$obj = new ObjectBasedPropertyBag($source, $readOnly);
-			return $obj;
-		}
-		
-		throw new Exception('Expected array or object.');
+		return new ObjectBasedPropertyBag($source, $readOnly);
 	}
 	
 	public function __get($name) {
@@ -40,13 +37,6 @@ abstract class PropertyBag implements ArrayAccess, Countable {
 		// NOTE: Called when property access ($pbag->property = value;)
 		// during a set could not be resolved.
 		$this->offsetSet($name, $value);
-	}
-	
-	private static function verifySourceType(&$source) {
-		$validType = !is_null($source) && (is_array($source) || is_object($source));
-		if (!$validType) {
-			throw new Exception('Expected array or object type', 2000);
-		}
 	}
 }
 
