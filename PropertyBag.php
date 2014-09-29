@@ -18,10 +18,6 @@ abstract class PropertyBag implements ArrayAccess, Countable {
 	}
 
 	public static function fromObject($source, $readOnly = false) {
-		if ($source === null || !is_object($source)) {
-			throw new Exception('Expected object type.');
-		}
-
 		return new ObjectBasedPropertyBag($source, $readOnly);
 	}
 
