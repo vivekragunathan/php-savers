@@ -1,7 +1,5 @@
 <?
 
-require_once 'ErrorCodes.php';
-
 trait MySqlWrapper {
 	/* @var PDO */
 	private $_handle;
@@ -56,8 +54,8 @@ trait MySqlWrapper {
 	private static function ensureString(&$value, $allowNull = true, $msg = null) {
 		if ($value === null && !$allowNull) {
 			throw new Exception($msg ?: 'Encountered unexpected data type! Expected string.',
-				ErrorCodes::INVALID_PARAMETER,
-				new Exception('[' . __FILE__ . ', #' . __LINE__ . '] ' . gettype($value), ErrorCodes::INVALID_PARAMETER));
+				2000,
+				new Exception('[' . __FILE__ . ', #' . __LINE__ . '] ' . gettype($value), 2000));
 		}
 	}
 }
