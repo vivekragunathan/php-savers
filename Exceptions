@@ -1,0 +1,91 @@
+class GlobalStatusCodes {
+	const SUCCESS									= 0;
+	const UNEXPECTED_ERROR				= 1000;
+	const VALIDATION_ERROR				= 2000;
+	const NULL_VALUE_ENCOUNTERED	= 2001;
+	const TYPE_MISMATCH						= 2002;
+	const DATABASE_ERROR 					= 2003;
+}
+
+class Exception2 extends Exception {
+	const FILE = 'FILE';
+	const LINE = 'LINE';
+
+	private $_context	= null;
+	private $_debug		= null;
+
+	public function __construct($message,
+	                            $code = GlobalStatusCodes::UNEXPECTED_ERROR,
+	                            array $context = null,
+	                            array $debug = null) {
+		$this->_context = $context === null ? [] : $context;
+		$this->_debug		= $debug === null ? [] : $debug;
+		parent::__construct($message, $code);
+	}
+
+	public function context() {
+		return $this->_context;
+	}
+	
+	public function debug() {
+		return $this->_debug;
+	}
+}
+
+class ValidationFailureException extends CdiExceptionBase {
+	public function __construct($errorMsg,
+	                            $errorCode = GlobalStatusCodes::PARAMETER_VALIDATION_FAILURE,
+	                            array $context = null) {
+		parent::__construct($errorMsg, $errorCode, $context);
+	}
+}
+
+class NullValueException extends ValidationException {
+	const MSG_TEXT = 'Expected non-null';
+	
+	public function __construct(array $context = null) {
+		parent::__construct(self::MSG_TEXT, GlobalStatusCodes::NULL_VALUE_ENCOUNTERED, $context);
+	}
+}
+
+class TypeMismatchException extends ValidationException {
+	const ACTUAL_TYPE	= 'actual_type';
+	const MSG_TEXT		= 'Type mismatch. Expected ';
+
+	public function __construct($expectedType, array $context = null) {
+		parent::__construct(self::MSG_TEXT . $expectedType,
+			GlobalStatusCodes::TYPE_MISMATCH,
+			$context);
+	}
+}
+
+class QueryExecutionFailureException extends CdiExceptionBase {
+	const MSG_TEXT = 'Query execution failed';
+	
+	public function __construct(array $context = null) {
+		parent::__construct(self::MSG_TEXT, GlobalStatusCodes::DATABASE_ERROR, $context);
+	}
+}
+
+class Hurl {
+	public static function ifTrue($condition,
+	                              $msg,
+	                              $errorCode = GlobalStatusCodes::UNEXPECTED_ERROR,
+	                              array $context = null) {
+		if ($condition !== true) { return; }
+		self::justThrow($msg, $errorCode, $context);
+	}
+
+	public static function ifFalse($condition,
+	                               $msg,
+	                               $errorCode = GlobalStatusCodes::UNEXPECTED_ERROR,
+	                               array $context = null) {
+		if ($condition !== false) { return; }
+		self::justThrow($msg, $errorCode, $context);
+	}
+
+	private static function justThrow($msg, $errorCode, array &$context = null) {
+		if ($msg instanceof Exception) { throw $msg; }
+		throw new Exception2($msg, $errorCode ?: 0, $context);
+	}
+}
