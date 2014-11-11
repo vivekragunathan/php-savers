@@ -1,6 +1,6 @@
 <?
 
-require_once 'Hurl.php';
+require_once 'Exceptions.php';
 
 class Call2KeyMapper {
 
